@@ -1,0 +1,192 @@
+Git & GitHub_Day05
+===================
+Git Branches (Continuation to Day 04)
+
+=> Renaming the branch
+
+Note: It is not possible to delete the default branch
+
+=> Git reflog
+
+=> Branch Merging
+git merge payments
+Merge made by the 'ort' strategy.
+ payments1.java | 0
+ payments2.java | 0
+ payments3.java | 0
+ payments4.java | 0
+ payments5.java | 0
+ 5 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 payments1.java
+ create mode 100644 payments2.java
+ create mode 100644 payments3.java
+ create mode 100644 payments4.java
+ create mode 100644 payments5.java
+
+=> Rebase
+git rebase
+
+git rebase movies
+Successfully rebased and updated refs/heads/finance.
+
+=> Merge Conflict
+
+=> Cherry Pick
+Step-by-Step Demo
+1️⃣ Create a new folder and initialize Git
+mkdir git-cherry-pick-demo
+cd git-cherry-pick-demo
+git init
+2️⃣ Create 5 Java files in master branch
+
+Create these files.
+
+master1.java
+public class Master1 {
+    public static void main(String[] args) {
+        System.out.println("This is master1.java");
+    }
+}
+master2.java
+public class Master2 {
+    public static void main(String[] args) {
+        System.out.println("This is master2.java");
+    }
+}
+master3.java
+public class Master3 {
+    public static void main(String[] args) {
+        System.out.println("This is master3.java");
+    }
+}
+master4.java
+public class Master4 {
+    public static void main(String[] args) {
+        System.out.println("This is master4.java");
+    }
+}
+master5.java
+public class Master5 {
+    public static void main(String[] args) {
+        System.out.println("This is master5.java");
+    }
+}
+3️⃣ Commit each file separately (IMPORTANT)
+
+We must create separate commits so we can cherry-pick the specific file.
+
+git add master1.java
+git commit -m "added master1.java"
+
+git add master2.java
+git commit -m "added master2.java"
+
+git add master3.java
+git commit -m "added master3.java"
+
+git add master4.java
+git commit -m "added master4.java"
+
+git add master5.java
+git commit -m "added master5.java"
+4️⃣ Verify commits
+git log --oneline
+
+Example output:
+
+a1b2345 added master5.java
+c2d3456 added master4.java
+d3e4567 added master3.java
+e4f5678 added master2.java
+f5g6789 added master1.java
+
+Copy the commit id of master1.java.
+
+Example:
+
+f5g6789
+5️⃣ Create an empty branch
+
+Now create a branch without files from master.
+
+git checkout --orphan branch1
+
+Now remove existing files:
+
+git rm -rf .
+
+Check directory:
+
+ls
+
+It should be empty.
+
+6️⃣ Cherry-pick the commit
+
+Now bring only the commit containing master1.java.
+
+git cherry-pick f5g6789
+7️⃣ Verify the files
+ls
+
+Output:
+
+master1.java
+
+Only master1.java will exist in branch1.
+
+8️⃣ Verify commit history
+git log --oneline
+
+You will see only:
+
+f5g6789 added master1.java
+
+=> Collaborators in GitHub 
+
+=> git reflog
+
+=> git fetch
+
+=> git tag
+
+=> git bisect
+
+=> git worktree
+
+=> git archive
+
+=> git submodule add <repo>
+
+=> git submodule update
+
+
+Jenkins - 12 days (1.5hr/session)
+Docker - 12 days (1.5hr/session)
+Kubernetes - 25-28 days (1.5hr/session)
+GitHub Actions - 7 days (1.5hr/session)
+Terraform - 7 days (1.5hr/session)
+Maven, Nexus, SonarQube, Prometheus & Grafana, ArgoCD, Istio, Trivy, Owasp....
+
+Linux - 6 hrs
+Git and GitHub - 8 hrs
+Ansible - 8 hrs
+
+120 hrs
+ 3 end to end projects
+
+AWS - 50-60+ (2 end to end projects)
+
+https://chatgpt.com/share/69b2ee96-5ee4-8002-8f35-a2cac233cc35
+
+
+
+
+
+
+
+
+
+
+
+
