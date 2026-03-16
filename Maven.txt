@@ -1,0 +1,193 @@
+==============
+MAVEN
+==============
+What is Maven?
+Maven is a build tool
+
+What we can do with Maven?
+Developers - using Maven we can create the initial project folder structure - to develop the source code of the application
+DevOps Engineer - using Maven we can package the source code
+
+Programming Languages are broadly categorized into two ways;
+Compiled languages	- code has to be compiled. Ex: Java, Go, C, C++
+Interpreted languages	- code doesn't require to be compiled. Ex: Python, NodeJS...
+
+Maven is developed by using Java Programming Language
+Maven is also known as Java Build Tool
+Maven is free and open-source s/w
+
+Understanding use cases of the Maven tool;
+Using Maven we can create the initial project folder structure.
+Using Maven we can download the 'dependencies' that are required to develop an application.
+
+What is a dependency?
+Chicken Biryani 	- Chicken, Basmati Rice (Main ingredients) 
+				- Masala items, .... (Additional ingredients)
+
+Netflix	- Java (main ingredient)
+		- Frameworks (dependencies)
+
+How maven will download the dependencies?
+Whenever we create initial project folder structure, a file gets created which is known as "pom.xml"
+POM - Project Object Model
+XML - Extension Markup Language
+Whatever dependencies that are required to develop the application, all these dependencies will be configured inside the pom.xml file
+
+3. Using maven we can compile the source code of the application.
+What is compilation?
+netflix.java ----> it has source code of the application
+the code inside the .java file cannot be executed directly because it is written in human understandable format
+the human understandable language cannot be read by the machines
+we need to convert the human understandable language into machine understandable language (Binary language - 0s and 1s)
+The process of converting human understandable language into machine understandable language is known as "Compilation"
+Maven can do the compilation
+the .java files will be converted into .class files
+
+					Compilation									Execution
+Netflix.java	---------------------------------------------> Netflix.class ---------------------------------------> JVM ------------------------------------> Output
+As a DevOps engineer it is our responsibility to do the compilation
+
+4. When we have multiple .java files, using Maven we can package all the .java files into a single file.
+Once the packaging is done we can directly compile them and execute the file
+
+In realtime we mostly have 3 types of applications;
+Standalone Application	- .jar file (JAVA ARCHIEVE)
+Web Application			- .war file (WEB ARCHIEVE)
+Enterprise Application		- .ear file (ENTERPRISE ARCHIEVE) 
+
+.jar, .war, .ear files are known as artifacts.
+
+Package = Generating the artifacts
+
+Creation of Standalone Application:
+Whenever we create the project folder structure, inside the folder structure we will have two things;
+	1. src folder	- we will write teh source code of the application
+	2. pom.xml	- we will configure the dependencies required for the application
+
+mvn archetype:generate -DgroupId=com.kastro.app -DartifactId=my-java-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+  <groupId>com.kastro.app</groupId>			-----> Company Name
+  <artifactId>my-java-app</artifactId>			-----> The Application Name
+  <packaging>jar</packaging>					-----> What kind of artifact will get generated
+  <version>1.0-SNAPSHOT</version>			-----> Version of the application
+  <name>my-java-app</name>					-----> Application name
+
+Note: even spring boot applications also generates jar file
+
+Configuring the dependencies in the pom.xml file;
+https://mvnrepository.com/
+
+How maven will download the dependency configured in the pom.xml file?
+Maven repositories;
+Local Repo
+Central Repo
+Remote Repo
+
+
+Creation of Web Application:
+mvn archetype:generate -DgroupId=com.kastro.webapp -DartifactId=my-web-app -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false
+
+Maven Goals;
+Goals = Commands
+any maven goal will start with "mvn"
+
+Compile - it will compile the source code of the app
+	.java ----> .class file
+mvn compile
+When we execute mvn compile, a new folder gets created which is known as "target" inside which the .class files will be available
+
+2. Test - it is used to perform the unit test execution of code
+mvn test
+
+3. Package - it is used to package the source code of the application as a jar file or as a war file
+mvn package
+When we execute mvn package, inside the target"folder the artifacts will be available
+
+4. Clean - it is used to delete the existing target folder (artifact)
+mvn clean
+
+Version1	----> Generate the artifact		-----> v1		----> Deployment	----> v1 app will be LIVE
+Developers updates the code
+Version2	----> Generate the artifact		-----> v2		----> Deployment	----> v2 app will be LIVE
+Developers updates the code
+Version3	----> Generate the artifact		-----> v3		----> Deployment	----> v3 app will be LIVE
+.
+.
+.
+.
+....
+v3 ----> Currently LIVE
+Developers found a bug (payment gateway) ----> Developers are going to update the code
+
+Rollback to the previous version (v2) - deploying the old version
+
+We need to store the artifacts for future roll back purposes
+Artifacts will be stored inside the Artifact repo tools (Nexus, JFrog, S3 Bucket)
+
+Note: All maven goals must be executed from the location where pom.xml file is available
+
+=============================================================================================================
+TOMCAT - It is used to deploy java based applications
+
+Tomcat Directory Structure;
+https://tomcat.apache.org/download-90.cgi
+
+bin - it consists of files which are related to stop and start the tomcat server
+		Linux/Ubuntu	----> startup.sh, shutdown.sh
+		Wndows		----> startup.bat, shutdown.bat
+
+conf - it consists of tomcat configurations files
+		server.xml			-----> It is used to change the tomcat port number 
+		tomcat-users.xml		-----> It is used to configure the tomcat admin username and password
+
+Tomcat will run on Port Number 8080
+
+webapps - this is the place where we deploy war files of the app
+host-manager  manager ---> context.xml
+
+lib - it consists of tomcat library files
+all the jar files of the application will be deployed here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
