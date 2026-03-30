@@ -52,3 +52,43 @@ Using CLASSPATH:       /root/apache-tomcat-9.0.116/bin/bootstrap.jar:/root/apach
 Using CATALINA_OPTS:   
 Tomcat started.
 [root@tomcat bin]# 
+
+-------------------------------------------------------------------------------
+
+
+Git CI/CD code
+
+
+pipeline {
+    agent {
+        label 'staragile'
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git 'https://github.com/nagrajyache/Netflix-Pipeline-Project.git'
+            }
+        }
+        stage('Maven Build') {
+            steps {
+                sh 'mvn clean'
+            }
+        }
+        stage('Maven Compile') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+        stage('Maven Package') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+        stage('Deploy to Tomcat') {
+            steps {
+                deploy adapters: [tomcat9(alternativeDeploymentContext: '', credentialsId: 'tomcat_creds', path: '', url: 'http://13.233.94.183:8080')], contextPath: 'Netflix_staragile', war: '**/*.war'
+            }
+        }
+    }
+}
