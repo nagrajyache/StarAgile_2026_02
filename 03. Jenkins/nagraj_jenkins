@@ -1,1 +1,54 @@
-
+[root@tomcat ~]# cd apache-tomcat-9.0.116/
+[root@tomcat apache-tomcat-9.0.116]# cd bin
+[root@tomcat bin]# ls
+bootstrap.jar       catalina.sh  commons-daemon-native.tar.gz  configtest.sh  digest.sh     setclasspath.bat  shutdown.sh  tomcat-juli.jar       tool-wrapper.sh
+catalina-tasks.xml  ciphers.bat  commons-daemon.jar            daemon.sh      makebase.bat  setclasspath.sh   startup.bat  tomcat-native.tar.gz  version.bat
+catalina.bat        ciphers.sh   configtest.bat                digest.bat     makebase.sh   shutdown.bat      startup.sh   tool-wrapper.bat      version.sh
+[root@tomcat bin]# pwd
+/root/apache-tomcat-9.0.116/bin
+[root@tomcat bin]# ./startup.sh 
+Using CATALINA_BASE:   /root/apache-tomcat-9.0.116
+Using CATALINA_HOME:   /root/apache-tomcat-9.0.116
+Using CATALINA_TMPDIR: /root/apache-tomcat-9.0.116/temp
+Using JRE_HOME:        /usr
+Using CLASSPATH:       /root/apache-tomcat-9.0.116/bin/bootstrap.jar:/root/apache-tomcat-9.0.116/bin/tomcat-juli.jar
+Using CATALINA_OPTS:   
+Tomcat started.
+[root@tomcat bin]# cd ..
+[root@tomcat apache-tomcat-9.0.116]# cd webapps/manager/META-INF/
+[root@tomcat META-INF]# ls
+context.xml
+[root@tomcat META-INF]# vi context.xml 
+[root@tomcat META-INF]# 
+[root@tomcat META-INF]# cd ../../..
+[root@tomcat apache-tomcat-9.0.116]# cd conf
+[root@tomcat conf]# ls
+Catalina  catalina.policy  catalina.properties  context.xml  jaspic-providers.xml  jaspic-providers.xsd  logging.properties  server.xml  tomcat-users.xml  tomcat-users.xsd  web.xml
+[root@tomcat conf]# vi tomcat-users.xml 
+[root@tomcat conf]# 
+[root@tomcat conf]# 
+[root@tomcat conf]# cd bin
+-bash: cd: bin: No such file or directory
+[root@tomcat conf]# cd ../bin
+[root@tomcat bin]# ls
+bootstrap.jar       catalina.sh  commons-daemon-native.tar.gz  configtest.sh  digest.sh     setclasspath.bat  shutdown.sh  tomcat-juli.jar       tool-wrapper.sh
+catalina-tasks.xml  ciphers.bat  commons-daemon.jar            daemon.sh      makebase.bat  setclasspath.sh   startup.bat  tomcat-native.tar.gz  version.bat
+catalina.bat        ciphers.sh   configtest.bat                digest.bat     makebase.sh   shutdown.bat      startup.sh   tool-wrapper.bat      version.sh
+[root@tomcat bin]# ./shutdown.sh
+Using CATALINA_BASE:   /root/apache-tomcat-9.0.116
+Using CATALINA_HOME:   /root/apache-tomcat-9.0.116
+Using CATALINA_TMPDIR: /root/apache-tomcat-9.0.116/temp
+Using JRE_HOME:        /usr
+Using CLASSPATH:       /root/apache-tomcat-9.0.116/bin/bootstrap.jar:/root/apache-tomcat-9.0.116/bin/tomcat-juli.jar
+Using CATALINA_OPTS:   
+NOTE: Picked up JDK_JAVA_OPTIONS:  --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+[root@tomcat bin]# 
+[root@tomcat bin]# ./startup.sh
+Using CATALINA_BASE:   /root/apache-tomcat-9.0.116
+Using CATALINA_HOME:   /root/apache-tomcat-9.0.116
+Using CATALINA_TMPDIR: /root/apache-tomcat-9.0.116/temp
+Using JRE_HOME:        /usr
+Using CLASSPATH:       /root/apache-tomcat-9.0.116/bin/bootstrap.jar:/root/apache-tomcat-9.0.116/bin/tomcat-juli.jar
+Using CATALINA_OPTS:   
+Tomcat started.
+[root@tomcat bin]# 
