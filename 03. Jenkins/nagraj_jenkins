@@ -45,19 +45,8 @@ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 
 Install docker
 
-#!/bin/bash
+sudo dnf install docker -y
 
-# Update system
-sudo yum update -y
-
-# Install Docker
-sudo amazon-linux-extras install docker -y
-
-# Start Docker
-sudo systemctl start docker
-
-# Enable Docker at boot
-sudo systemctl enable docker
 
 
 [root@tomcat ~]# cd apache-tomcat-9.0.116/
