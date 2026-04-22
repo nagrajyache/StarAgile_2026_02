@@ -143,3 +143,136 @@ pipeline {
         }
     }
 }
+
+
+
+
+=====================================================================================================================
+
+[root@ip-172-31-42-133 ~]# cat worker.sh
+#!/bin/bash
+
+set -e
+
+echo "=== 1. Disable swap ==="
+swapoff -a
+sed -i '/ swap / s/^/#/' /etc/fstab
+
+echo "=== 2. Load required kernel modules ==="
+cat <<EOF | tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
+EOF
+
+modprobe overlay
+modprobe br_netfilter
+
+echo "=== 3. Set sysctl params ==="
+cat <<EOF | tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+
+sysctl --system
+
+echo "=== 4. Install container runtime (Docker) ==="
+yum install -y docker
+systemctl enable docker
+systemctl start docker
+
+echo "=== 5. Install Kubernetes tools ==="
+cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/repodata/repomd.xml.key
+EOF
+
+yum install -y kubelet kubeadm kubectl
+systemctl enable kubelet
+systemctl start kubelet
+
+echo "=== 6. Join Kubernetes cluster ==="
+
+kubeadm join 172.31.47.234:6443 \
+  --token 5br96b.mu5ytqdi8vnljnsb \
+  --discovery-token-ca-cert-hash sha256:44edd48856416f1d6005d9678068716af47ecc15f2d6d2adb41d13b58c48039f
+
+echo "=== Worker node setup completed ==="
+
+[root@ip-172-31-42-133 ~]# 
+
+======================================================================================================================================================
+[root@k8-master ~]#
+[root@k8-master ~]# cat nagraj.sh
+#!/bin/bash
+set -e
+
+echo "===== SET HOSTNAME ====="
+hostnamectl set-hostname k8-master
+echo "127.0.0.1 k8-master" >> /etc/hosts
+
+echo "===== SYSTEM UPDATE ====="
+dnf update -y
+
+echo "===== DISABLE SWAP ====="
+swapoff -a
+sed -i '/swap/d' /etc/fstab
+
+echo "===== LOAD KERNEL MODULES ====="
+echo -e "overlay\nbr_netfilter" > /etc/modules-load.d/k8s.conf
+
+modprobe overlay
+modprobe br_netfilter
+
+echo "===== SYSCTL SETTINGS ====="
+echo -e "net.bridge.bridge-nf-call-iptables=1\nnet.bridge.bridge-nf-call-ip6tables=1\nnet.ipv4.ip_forward=1" > /etc/sysctl.d/k8s.conf
+
+sysctl --system
+
+echo "===== INSTALL containerd ====="
+dnf install -y containerd iproute-tc
+
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+
+sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+
+systemctl enable --now containerd
+
+echo "===== ADD K8s REPO ====="
+cat > /etc/yum.repos.d/kubernetes.repo <<EOF
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/repodata/repomd.xml.key
+EOF
+
+echo "===== INSTALL K8s ====="
+dnf install -y kubelet kubeadm kubectl
+systemctl enable --now kubelet
+
+echo "===== INIT CLUSTER ====="
+kubeadm init --pod-network-cidr=192.168.0.0/16 > /root/kubeinit.log
+
+echo "===== SETUP KUBECTL ====="
+mkdir -p /root/.kube
+cp /etc/kubernetes/admin.conf /root/.kube/config
+
+echo "===== INSTALL CALICO ====="
+export KUBECONFIG=/etc/kubernetes/admin.conf
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+echo "===== SAVE JOIN COMMAND ====="
+kubeadm token create --print-join-command > /root/join-command.sh
+
+echo "===== DONE ====="
+
+[root@k8-master ~]#
+
+=============================================================
