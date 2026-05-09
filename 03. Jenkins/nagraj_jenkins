@@ -282,6 +282,7 @@ Install Promethus and Grafana
 
 # Update system
 sudo yum update -y
+yum install git -y
 
 # Create Prometheus user
 sudo useradd --no-create-home --shell /bin/false prometheus
@@ -292,13 +293,13 @@ sudo mkdir /var/lib/prometheus
 
 # Download Prometheus
 cd /tmp
-wget https://github.com/prometheus/prometheus/releases/latest/download/prometheus-3.4.2.linux-amd64.tar.gz
+wget https://github.com/prometheus/prometheus/releases/download/v3.0.0/prometheus-3.0.0.linux-amd64.tar.gz
 
 # Extract Prometheus
-tar -xvf prometheus-3.4.2.linux-amd64.tar.gz
+tar -xvf prometheus-3.0.0.linux-amd64.tar.gz
 
 # Move binaries
-cd prometheus-3.4.2.linux-amd64
+cd prometheus-3.0.0.linux-amd64
 sudo cp prometheus promtool /usr/local/bin/
 
 # Set ownership
