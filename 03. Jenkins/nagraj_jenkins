@@ -378,3 +378,71 @@ echo "Prometheus URL : http://<EC2-PUBLIC-IP>:9090"
 echo "Grafana URL    : http://<EC2-PUBLIC-IP>:3000"
 echo "Grafana Login  : admin / admin"
 echo "====================================="
+
+
+
+
+
+====================================================
+Install monitor on k8 cluster
+
+[root@k8-prod-master .ssh]# curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+[WARNING] Could not find git. It is required for plugin installation.
+Downloading https://get.helm.sh/helm-v3.21.0-linux-amd64.tar.gz
+Verifying checksum... Done.
+Preparing to install helm into /usr/local/bin
+helm installed into /usr/local/bin/helm
+[root@k8-prod-master .ssh]# helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+"prometheus-community" has been added to your repositories
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "prometheus-community" chart repository
+Update Complete. ⎈Happy Helming!⎈
+[root@k8-prod-master .ssh]# helm install node-exporter prometheus-community/prometheus-node-exporter \
+  -n monitoring --create-namespace
+NAME: node-exporter
+LAST DEPLOYED: Wed May 27 20:26:19 2026
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace monitoring -l "app.kubernetes.io/name=prometheus-node-exporter,app.kubernetes.io/instance=node-exporter" -o jsonpath="{.items[0].metadata.name}")
+  echo "Visit http://127.0.0.1:9100 to use your application"
+  kubectl port-forward --namespace monitoring $POD_NAME 9100
+[root@k8-prod-master .ssh]# helm install kube-state-metrics prometheus-community/kube-state-metrics \
+  -n monitoring
+NAME: kube-state-metrics
+LAST DEPLOYED: Wed May 27 20:26:35 2026
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+kube-state-metrics is a simple service that listens to the Kubernetes API server and generates metrics about the state of the objects.
+The exposed metrics can be found here:
+https://github.com/kubernetes/kube-state-metrics/blob/master/docs/README.md#exposed-metrics
+
+The metrics are exported on the HTTP endpoint /metrics on the listening port.
+In your case, kube-state-metrics.monitoring.svc.cluster.local:8080/metrics
+
+They are served either as plaintext or protobuf depending on the Accept header.
+They are designed to be consumed either by Prometheus itself or by a scraper that is compatible with scraping a Prometheus client endpoint.
+[root@k8-prod-master .ssh]# kubectl get svc -n monitoring
+NAME                                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+kube-state-metrics                       ClusterIP   10.109.96.116    <none>        8080/TCP   29s
+node-exporter-prometheus-node-exporter   ClusterIP   10.101.124.247   <none>        9100/TCP   45s
+[root@k8-prod-master .ssh]# kubectl patch svc node-exporter-prometheus-node-exporter -n monitoring \
+-p '{"spec":{"type":"NodePort"}}'
+service/node-exporter-prometheus-node-exporter patched
+[root@k8-prod-master .ssh]#
+[root@k8-prod-master .ssh]# kubectl get svc -n monitoring
+NAME                                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kube-state-metrics                       ClusterIP   10.109.96.116    <none>        8080/TCP         2m2s
+node-exporter-prometheus-node-exporter   NodePort    10.101.124.247   <none>        9100:32401/TCP   2m18s
+[root@k8-prod-master .ssh]# kubectl get nodes -o wide
+NAME             STATUS   ROLES           AGE     VERSION    INTERNAL-IP     EXTERNAL-IP   OS-IMAGE                        KERNEL-VERSION                    CONTAINER-RUNTIME
+k8-prod-master   Ready    control-plane   3h22m   v1.29.15   172.31.11.135   <none>        Amazon Linux 2023.11.20260526   6.1.172-216.329.amzn2023.x86_64   containerd://2.2.3+unknown
+k8-prod-worker   Ready    <none>          3h6m    v1.29.15   172.31.4.151    <none>        Amazon Linux 2023.11.20260526   6.1.172-216.329.amzn2023.x86_64   containerd://2.2.3+unknown
+[root@k8-prod-master .ssh]#
