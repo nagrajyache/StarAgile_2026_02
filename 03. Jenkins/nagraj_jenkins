@@ -446,3 +446,203 @@ NAME             STATUS   ROLES           AGE     VERSION    INTERNAL-IP     EXT
 k8-prod-master   Ready    control-plane   3h22m   v1.29.15   172.31.11.135   <none>        Amazon Linux 2023.11.20260526   6.1.172-216.329.amzn2023.x86_64   containerd://2.2.3+unknown
 k8-prod-worker   Ready    <none>          3h6m    v1.29.15   172.31.4.151    <none>        Amazon Linux 2023.11.20260526   6.1.172-216.329.amzn2023.x86_64   containerd://2.2.3+unknown
 [root@k8-prod-master .ssh]#
+
+
+
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_USER = "nagrajyache"
+        APP_NAME = "zomato"
+        TAG = "v${BUILD_NUMBER}"
+        FULL_IMAGE = "nagrajyache/foodappzomato:${TAG}"
+        KUBECONFIG = "/home/jenkins/.kube/config"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/nagrajyache/FoodAppZomato.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                echo "Building Docker image..."
+                docker build -t ${FULL_IMAGE} .
+                '''
+            }
+        }
+
+        stage('Docker Hub Login') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKERHUB_USER',
+                    passwordVariable: 'DOCKERHUB_PASS'
+                )]) {
+
+                    sh '''
+                    echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
+                    '''
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh '''
+                echo "Pushing Docker image..."
+                docker push ${FULL_IMAGE}
+                '''
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                echo "Deploying to Kubernetes..."
+
+                cd Kubernetes/
+
+                cat deployment.yaml | sed 's|IMAGE_NAME|${FULL_IMAGE}|g' > deployment-temp.yaml
+
+                kubectl apply --validate=false -f deployment-temp.yaml
+
+                kubectl apply --validate=false -f service.yaml
+
+                kubectl rollout status deployment/${APP_NAME}
+                '''
+            }
+        }
+
+        stage('Deploy via Ansible through k8 prod') {
+            steps {
+                sh '''
+				cd /etc/ansible
+                echo "Running Ansible Playbook for Kubernetes Deployment..."
+
+                ansible-playbook -i hosts deployk8.yaml
+                '''
+            }
+        }
+    }
+
+    post {
+
+        success {
+            echo "✅ Pipeline SUCCESS - ${APP_NAME} deployed!"
+        }
+
+        failure {
+            echo "❌ Pipeline FAILED - check logs"
+        }
+    }
+}
+
+
+
+kubectl delete -f deployment.yaml
+
+
+[root@FDE-DJ ansible]#
+[root@FDE-DJ ansible]# ansible-playbook -i hosts deployk8.yaml
+
+PLAY [Deploy Zomato] **********************************************************************************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ********************************************************************************************************************************************************************************************************************************************************
+[WARNING]: Platform linux on host 172.31.11.135 is using the discovered Python interpreter at /usr/bin/python3.9, but future installation of another Python interpreter could change the meaning of that path. See https://docs.ansible.com/ansible-
+core/2.15/reference_appendices/interpreter_discovery.html for more information.
+ok: [172.31.11.135]
+
+TASK [Copy deployment file] ***************************************************************************************************************************************************************************************************************************************************
+changed: [172.31.11.135]
+
+TASK [Copy service file] ******************************************************************************************************************************************************************************************************************************************************
+changed: [172.31.11.135]
+
+TASK [Apply Deployment] *******************************************************************************************************************************************************************************************************************************************************
+changed: [172.31.11.135]
+
+TASK [Apply Service] **********************************************************************************************************************************************************************************************************************************************************
+changed: [172.31.11.135]
+
+PLAY RECAP ********************************************************************************************************************************************************************************************************************************************************************
+172.31.11.135              : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+[root@FDE-DJ ansible]#
+[root@FDE-DJ ansible]# sudo su -s /bin/bash jenkins
+bash-5.2$ ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/server1.pem ec2-user@172.31.11.135
+Failed to add the host to the list of known hosts (/var/lib/jenkins/.ssh/known_hosts).
+Load key "/var/lib/jenkins/.ssh/server1.pem": Permission denied
+ec2-user@172.31.11.135: Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
+bash-5.2$
+bash-5.2$ exit
+exit
+[root@FDE-DJ ansible]# chown jenkins:jenkins /var/lib/jenkins/.ssh/server1.pem
+[root@FDE-DJ ansible]# chmod 400 /var/lib/jenkins/.ssh/server1.pem
+[root@FDE-DJ ansible]# chmod 700 /var/lib/jenkins/.ssh
+[root@FDE-DJ ansible]#
+
+
+[root@FDE-DJ ansible]# chown -R jenkins:jenkins /var/lib/jenkins/.ssh
+[root@FDE-DJ ansible]# chmod 700 /var/lib/jenkins/.ssh
+[root@FDE-DJ ansible]# chmod 400 /var/lib/jenkins/.ssh/server1.pem
+[root@FDE-DJ ansible]# sudo su -s /bin/bash jenkins
+bash-5.2$ namei -l /var/lib/jenkins/.ssh/server1.pem
+f: /var/lib/jenkins/.ssh/server1.pem
+dr-xr-xr-x root    root    /
+drwxr-xr-x root    root    var
+drwxr-xr-x root    root    lib
+drwxr-xr-x jenkins jenkins jenkins
+drwx------ jenkins jenkins .ssh
+-r-------- jenkins jenkins server1.pem
+bash-5.2$ ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/server1.pem ec2-user@172.31.11.135
+Warning: Permanently added '172.31.11.135' (ED25519) to the list of known hosts.
+   ,     #_
+   ~\_  ####_        Amazon Linux 2023
+  ~~  \_#####\
+  ~~     \###|
+  ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+   ~~       V~' '->
+    ~~~         /
+      ~~._.   _/
+         _/ _/
+       _/m/'
+Last login: Wed May 27 19:16:50 2026 from 172.31.0.187
+[ec2-user@k8-prod-master ~]$ exit
+logout
+Connection to 172.31.11.135 closed.
+bash-5.2$ exit
+
+
+eksctl create cluster --name staragile-cluster4 --region ap-south-1 --node-type t2.medium  --zones ap-south-1a,ap-south-1b
+
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+
+rule_files:
+
+scrape_configs:
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "eks-nodes"
+    static_configs:
+      - targets:
+          - "172.31.11.135:32401"
+          - "172.31.4.151:32401"
